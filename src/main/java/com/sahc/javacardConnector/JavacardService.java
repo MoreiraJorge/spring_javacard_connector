@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.ArrayList;
 
 @Service
 public class JavacardService {
@@ -187,31 +188,37 @@ public class JavacardService {
                 while((st = bufferedReader.readLine()) != null){
                     if(!st.startsWith("/") && !st.isEmpty()){
                         Apdu apdu = new Apdu();
-                        byte[] cmnds = {0};
-                        byte[] data = {0};
+                        ArrayList<Byte> cmnds = new ArrayList<>();
+                        ArrayList<Byte> data = new ArrayList<>();
                         int byteCounter = 0;
                         byte lc = (byte)0;
                         byte le = (byte)0;
                         for(int i=0; i<st.length() -1; i+=5){ //-1 que é o ";" no final de cada APDU
 
                             //byte currentByte = Byte.valueOf(st.substring(i+2, i+4), 16);      //"i+2, i+4" vai buscar apenas os valores que estão depois do "0x"
-                            byte currentByte = Byte.parseByte(st.substring(i+2, i+4), 16);//tirar o "+2" se for preciso o "0x" para o parse também
+                            //byte currentByte = Byte.parseByte(st.substring(i+2, i+4), 16);    //tirar o "+2" se for preciso o "0x" para o parse também
+                            byte currentByte = (byte) Integer.parseInt(st.substring(i+2, i+4), 16);
                             System.out.print(currentByte + " ");
                             if(byteCounter < 4){                    //4 primeiros bytes
-                                cmnds[byteCounter] = currentByte;
+                                cmnds.add(currentByte);
                             }else if(byteCounter == 4){             //5º byte = LC
                                 lc = currentByte;
                             }else if(byteCounter < st.length() -5){ //todos os bytes restantes menos o final
-                                data[byteCounter] = currentByte;
+                                data.add(currentByte);
                             }else{                                  //ultimo byte = LE
                                 le = currentByte;
                             }
                             byteCounter++;
                             System.out.println();
                         }
-                        apdu.command = cmnds;
+                        byte[] cmndsArr = new byte[cmnds.size()];
+                        byte[] dataArr = new byte[data.size()];
+                        cmndsArr = cmnds.toArray(cmndsArr);         //como converter de ArrayList<Byte> para byte[]?
+                        dataArr = data.toArray(dataArr);
+
+                        apdu.command = cmndsArr;
                         apdu.Lc = lc;
-                        apdu.dataIn = data;
+                        apdu.dataIn = dataArr;
                         apdu.Le = le;
                         apdu.setDataIn(apdu.dataIn, apdu.Lc);
 
