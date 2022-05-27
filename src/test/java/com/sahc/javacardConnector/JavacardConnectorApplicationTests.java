@@ -10,4 +10,10 @@ class JavacardConnectorApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void teste() {
+		JavacardService novo = new JavacardService();
+		novo.readAndSendCAP();
+	}
+
 }

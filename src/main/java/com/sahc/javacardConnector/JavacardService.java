@@ -5,9 +5,7 @@ import com.sun.javacard.apduio.CadClientInterface;
 import com.sun.javacard.apduio.CadDevice;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.Socket;
 
 @Service
@@ -174,5 +172,60 @@ public class JavacardService {
 
     public void setApdu() {
         this.apdu = new Apdu();
+    }
+
+
+    public void readAndSendCAP(){
+        try{
+
+            File file = new File("C:\\Users\\vasco\\ideaProjects\\outros\\spring_javacard_connector\\src\\main\\java\\com\\sahc\\javacardConnector\\cap-sahc-script.txt");
+            if(!file.exists()){
+                System.out.println("Failed to read file.");
+            }else{
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                String st;
+                while((st = bufferedReader.readLine()) != null){
+                    if(!st.startsWith("/") && !st.isEmpty()){
+                        Apdu apdu = new Apdu();
+                        byte[] cmnds = {0};
+                        byte[] data = {0};
+                        int byteCounter = 0;
+                        byte lc = (byte)0;
+                        byte le = (byte)0;
+                        for(int i=0; i<st.length() -1; i+=5){ //-1 que é o ";" no final de cada APDU
+
+                            //byte currentByte = Byte.valueOf(st.substring(i+2, i+4), 16);      //"i+2, i+4" vai buscar apenas os valores que estão depois do "0x"
+                            byte currentByte = Byte.parseByte(st.substring(i+2, i+4), 16);//tirar o "+2" se for preciso o "0x" para o parse também
+                            System.out.print(currentByte + " ");
+                            if(byteCounter < 4){                    //4 primeiros bytes
+                                cmnds[byteCounter] = currentByte;
+                            }else if(byteCounter == 4){             //5º byte = LC
+                                lc = currentByte;
+                            }else if(byteCounter < st.length() -5){ //todos os bytes restantes menos o final
+                                data[byteCounter] = currentByte;
+                            }else{                                  //ultimo byte = LE
+                                le = currentByte;
+                            }
+                            byteCounter++;
+                            System.out.println();
+                        }
+                        apdu.command = cmnds;
+                        apdu.Lc = lc;
+                        apdu.dataIn = data;
+                        apdu.Le = le;
+                        apdu.setDataIn(apdu.dataIn, apdu.Lc);
+
+                    }
+                }
+
+
+            }
+
+
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+
     }
 }
