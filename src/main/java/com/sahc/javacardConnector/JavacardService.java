@@ -176,6 +176,7 @@ public class JavacardService {
     }
 
 
+    //TODO: Finalizar leitura de CAP
     public void readAndSendCAP(){
         try{
 

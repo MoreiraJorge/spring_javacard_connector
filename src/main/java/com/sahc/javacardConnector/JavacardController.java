@@ -14,9 +14,10 @@ public class JavacardController {
         this.cardService = cardService;
     }
 
-    @GetMapping("/")
-    public String helloWorld() throws Exception {
+    @GetMapping("/send_apdu")
+    public String sendApdu() throws Exception {
         try {
+            //TODO: Build the apdu from the request and send it!
             cardService.setApdu();
             byte[] apduCommand = new byte[4];
             apduCommand[0] = (byte) 128;
@@ -40,7 +41,7 @@ public class JavacardController {
         }
     }
 
-    @GetMapping("/conect")
+    @GetMapping("/connect")
     public String connect() throws Exception {
         try {
             cardService.establishConnectionToSimulator();
